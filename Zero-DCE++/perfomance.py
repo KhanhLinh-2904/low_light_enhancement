@@ -41,13 +41,13 @@ if __name__ == '__main__':
 
 	with torch.no_grad():
 
-		filePath = '/home/linhhima/enhanced_image_Linh/low_light_enhancement/Zero-DCE++/data/test_data/real/11_0_.png'
+		filePath = '/home/linhhima/low_light_enhancement/Zero-DCE++/data/test_data/real/11_0_.png'
 		sum_time = 0
 		for i in range(0, 110):
-			lowlight(filePath)
+			inference_time = lowlight(filePath)
 			if i < 10:
 				continue
-			sum_time = sum_time + lowlight(filePath)
-		print("Perfomance: ", sum_time/100)
+			sum_time = sum_time + inference_time
+		print("Perfomance Zero_DCE++: ", sum_time/100)
 		
 
