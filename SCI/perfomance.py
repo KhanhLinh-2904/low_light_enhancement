@@ -20,7 +20,7 @@ def lowlight(img_path):
     image = image.unsqueeze(0)
     input = Variable(image, volatile=True)
 
-    model = Finetunemodel('./weights/difficult.pt')
+    model = Finetunemodel('./weights/medium.pt')
     model.eval()
     start = time.time()
     model(input)
@@ -31,10 +31,11 @@ def lowlight(img_path):
 if __name__ == '__main__':
     with torch.no_grad():
         
-        filePath = '/home/linhhima/enhanced_image_Linh/low_light_enhancement/Zero-DCE++/data/test_data/real/11_0_.png'
+        filePath = '/home/linhhima/low_light_enhancement/Zero-DCE++/data/test_data/real/11_0_.png'
         sum_time = 0
-        for i in range(1, 111):
-            lowlight(filePath)
-            if i == 11:
-                sum_time = sum_time + lowlight(filePath)
-        print("Perfomance: ", sum_time/110)
+        for i in range(0, 110):
+            inference_time = lowlight(filePath)
+            if i < 10:
+                continue
+            sum_time = sum_time + inference_time
+        print("Perfomance SCI: ", sum_time/100)
