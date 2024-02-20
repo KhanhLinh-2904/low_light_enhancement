@@ -37,7 +37,7 @@ def calculate_metrics(enhanced_img,enhanced_img_gray):
 
 if __name__ == '__main__':
     enhanced_image_folder = (
-        '/home/linhhima/enhanced_image_Linh/SCI/results/difficult'
+        '/home/linhhima/low_light_enhancement/SCI/results/image_from_Zero_DCE'
     )
 
     images = os.listdir(enhanced_image_folder)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         plt.plot(hist_g,color = 'g')
         plt.plot(hist_r,color = 'r')
         # Lưu vào thư mục
-        plt.savefig('foo.png')
+        plt.savefig('histogram.png')
         plt.clf()
         # Thêm histogram của ảnh vào tổng histogram
         # total_hist[0] += hist_b.flatten()

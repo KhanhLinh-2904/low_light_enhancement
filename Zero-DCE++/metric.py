@@ -26,12 +26,6 @@ def calculate_metrics(enhanced_img,enhanced_img_gray):
     hist_g = cv2.calcHist([g], [0], None, [num_bins], [0, 256])
     hist_r = cv2.calcHist([r], [0], None, [num_bins], [0, 256])
 
-    # Thêm histogram của ảnh vào tổng histogram
-    total_hist[0] += hist_b.flatten()
-    total_hist[1] += hist_g.flatten()
-    total_hist[2] += hist_r.flatten()
-
-
     return (
         entropy_enhanced,
         std_dev_enhanced,
@@ -43,7 +37,7 @@ def calculate_metrics(enhanced_img,enhanced_img_gray):
 
 if __name__ == '__main__':
     enhanced_image_folder = (
-        '/home/linhhima/enhanced_image_Linh/Zero-DCE++/data/result_Zero_DCE++/real'
+        '/home/linhhima/low_light_enhancement/Zero-DCE++/data/result_Zero_DCE++/real'
     )
 
     images = os.listdir(enhanced_image_folder)
@@ -65,19 +59,22 @@ if __name__ == '__main__':
         ) = calculate_metrics(enhanced_img, enhanced_img_gray)
         sum_entropy += entropy_enhanced
         sum_std_dev += std_dev_enhanced
-        # Thêm histogram của ảnh vào tổng histogram
-        total_hist[0] += hist_b.flatten()
-        total_hist[1] += hist_g.flatten()
-        total_hist[2] += hist_r.flatten()
+        plt.plot(hist_b,color = 'b')
+        plt.plot(hist_g,color = 'g')
+        plt.plot(hist_r,color = 'r')
+        # Lưu vào thư mục
+        plt.savefig('histogram.png')
+        plt.clf()
+
         result = f'{image} entropy: {entropy_enhanced}, std: {std_dev_enhanced}'
         results = results + result + '\n'
     average_entropy = sum_entropy / len(images)
     average_std_dev = sum_std_dev / len(images)
-    total_hist /= len(images)
-    plt.plot(total_hist[0],color = 'b')
-    plt.plot(total_hist[1],color = 'g')
-    plt.plot(total_hist[2],color = 'r')
-    plt.xlim([0,256])
-    plt.show()
+    # total_hist /= len(images)
+    # plt.plot(total_hist[0],color = 'b')
+    # plt.plot(total_hist[1],color = 'g')
+    # plt.plot(total_hist[2],color = 'r')
+    # plt.xlim([0,256])
+    # plt.show()
     results = results + f'average entropy: {average_entropy}, std: {average_std_dev}'
     print(results)
