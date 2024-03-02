@@ -1,5 +1,6 @@
 import os
 import sys
+import PIL
 
 import torch
 import torch.utils.data as data
@@ -47,7 +48,7 @@ class lowlight_loader(data.Dataset):
 		
 		data_lowlight = Image.open(data_lowlight_path)
 		
-		data_lowlight = data_lowlight.resize((self.size,self.size), Image.ANTIALIAS)
+		data_lowlight = data_lowlight.resize((self.size,self.size), PIL.Image.Resampling.LANCZOS)
 		data_lowlight = (np.asarray(data_lowlight)/255.0) 
 		data_lowlight = torch.from_numpy(data_lowlight).float()
 

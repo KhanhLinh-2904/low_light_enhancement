@@ -15,7 +15,7 @@ from PIL import Image
 import glob
 import time
 
-def lowlight(image_path):
+def lowlight(image_path,image_name):
 	os.environ['CUDA_VISIBLE_DEVICES']='0'
 	scale_factor = 12
 	data_lowlight = Image.open(image_path)
@@ -41,12 +41,9 @@ def lowlight(image_path):
 	end_time = (time.time() - start)
 
 	print(end_time)
-	image_path = image_path.replace('test_data','result_Zero_DCE++')
-
-	result_path = image_path
-	if not os.path.exists(image_path.replace('/'+image_path.split("/")[-1],'')):
-		os.makedirs(image_path.replace('/'+image_path.split("/")[-1],''))
-	# import pdb;pdb.set_trace()
+	result_path = '/home/linhhima/low_light_enhancement/Zero-DCE++/data/result_test_image/Fake/smartphone'
+	result_path = os.path.join(result_path, image_name)
+	print("result_path: ",result_path)
 	torchvision.utils.save_image(enhanced_image, result_path)
 	return end_time
 
@@ -54,15 +51,14 @@ if __name__ == '__main__':
 
 	with torch.no_grad():
 
-		filePath = 'data/test_data/'	
+		filePath = '/home/linhhima/low_light_enhancement/Zero-DCE++/data/test_image/Fake/smartphone'	
 		file_list = os.listdir(filePath)
 		sum_time = 0
 		for file_name in file_list:
 			print("file_name:",file_name)
-			test_list = glob.glob(filePath+file_name+"/*") 
-			for image in test_list:
-				print("image:",image)
-				sum_time = sum_time + lowlight(image)
+			path_to_image = os.path.join(filePath, file_name)
+			print("path_to_image:",path_to_image)
+			sum_time = sum_time + lowlight(path_to_image,file_name)
 		print(sum_time)
 		
 
