@@ -7,6 +7,21 @@ from torchvision.models.vgg import vgg16
 import numpy as np
 
 
+
+class KLD_Loss(nn.Module):
+    def __init__(self):
+        super(KLD_Loss, self).__init__()
+
+    def forward(self,input_image, output_image):
+        r,g,b = torch.split(input_image , 1, dim=1)
+        R,G,B = torch.split(output_image , 1, dim=1)
+        kl_loss = nn.KLDivLoss()
+        # print("torch.abs(kl_loss(torch.abs(r-b),torch.abs(R-B)): ",torch.abs(kl_loss(torch.abs(r-b),torch.abs(R-B))))
+        # print("r-b:",r-b)
+        # return kl_loss(r-b,R-B) + kl_loss(r-g, R-G) + kl_loss(g-b, G-B)
+        return torch.abs(kl_loss(torch.abs(r-b),torch.abs(R-B)) + kl_loss(torch.abs(r-g), torch.abs(R-G)) + kl_loss(torch.abs(g-b), torch.abs(G-B)))
+    
+
 class L_color(nn.Module):
 
     def __init__(self):
@@ -15,7 +30,6 @@ class L_color(nn.Module):
     def forward(self, x ):
 
         b,c,h,w = x.shape
-
         mean_rgb = torch.mean(x,[2,3],keepdim=True)
         mr,mg, mb = torch.split(mean_rgb, 1, dim=1)
         Drg = torch.pow(mr-mg,2)

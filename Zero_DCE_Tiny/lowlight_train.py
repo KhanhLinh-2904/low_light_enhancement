@@ -13,6 +13,10 @@ import Myloss
 import numpy as np
 from torchvision import transforms
 import torch
+import torch.nn.functional as F
+import gc
+
+gc.collect()
 torch.cuda.empty_cache()
 # Save the current standard output
 original_stdout = sys.stdout
@@ -61,7 +65,7 @@ def train(config):
 	L_exp = Myloss.L_exp(16)
 	# L_exp = Myloss.L_exp(16,0.6)
 	L_TV = Myloss.L_TV()
-
+	L_kl = Myloss.KLD_Loss()
 	criterion = nn.L1Loss() 
 
 	optimizer = torch.optim.Adam(DCE_net.parameters(), lr=config.lr, weight_decay=config.weight_decay)
@@ -76,18 +80,36 @@ def train(config):
 			E = 0.6
 
 			enhanced_image, A  = DCE_net(train_img_lowlight)
-			Loss_TV = 1600*L_TV(A)
-			# Loss_TV = 200*L_TV(A)			
-			loss_spa = torch.mean(L_spa(enhanced_image, label_img))
-			loss_col = 5*torch.mean(L_color(enhanced_image))
 
-			loss_exp = 10*torch.mean(L_exp(enhanced_image,E))
 
-			
+			w1, w2, w3, w4, w5 = 5, 1600, 1, 5, 10
+			# w1, w2, w3, w4, w5 = 1, 1, 1, 1, 1
+			# loss_kl = L_kl(train_img_lowlight,enhanced_image)
+			# loss_kl = L_kl(train_img_lowlight,enhanced_image)
+			# Loss_TV = L_TV(A)
+			# loss_col = torch.mean(L_color(enhanced_image))
+			# loss_exp = torch.mean(L_exp(enhanced_image,E))
+
+			loss_kl = w1*L_kl(train_img_lowlight,enhanced_image)
+			Loss_TV = w2*L_TV(A)
+			loss_spa = w3*torch.mean(L_spa(enhanced_image, label_img))
+			loss_col = w4*torch.mean(L_color(enhanced_image))
+			loss_exp = w5*torch.mean(L_exp(enhanced_image,E))
+
+
 			# best_loss
-			loss =  Loss_TV + loss_spa + loss_col + loss_exp
+			loss =  Loss_TV + loss_spa + loss_col + loss_exp + torch.Tensor(loss_kl.detach().cpu().numpy())
+			# loss =  Loss_TV + loss_spa + loss_col + loss_exp
 
-
+			# print("loss_kl: ",loss_kl)
+			# print("Loss_TV: ",Loss_TV)
+			# print("loss_spa: ",loss_spa)
+			# print("loss_col: ",loss_col)
+			# print("loss_exp: ",loss_exp)
+			# print("loss: ",loss)
+			# print()
+			# print()
+			# print()
 			
 			optimizer.zero_grad()
 			loss.backward()
@@ -131,10 +153,10 @@ if __name__ == "__main__":
 	parser.add_argument('--train_batch_size', type=int, default=8)
 	parser.add_argument('--val_batch_size', type=int, default=8)
 	parser.add_argument('--num_workers', type=int, default=4)
-	parser.add_argument('--display_iter', type=int, default=10)
+	parser.add_argument('--display_iter', type=int, default=30)
 	parser.add_argument('--snapshot_iter', type=int, default=10)
 	parser.add_argument('--scale_factor', type=int, default=1)
-	parser.add_argument('--snapshots_folder', type=str, default="snapshots_Zero_DCE++_new/")
+	parser.add_argument('--snapshots_folder', type=str, default="snapshots_Zero_DCE_Tiny/")
 	parser.add_argument('--load_pretrain', type=bool, default= False)
 	# parser.add_argument('--pretrain_dir', type=str, default= "snapshots_Zero_DCE++/Epoch99.pth")
 

@@ -34,14 +34,14 @@ def lowlight(image_path,image_name):
 	data_lowlight = data_lowlight.unsqueeze(0)
 
 	DCE_net = model.enhance_net_nopool(scale_factor)
-	DCE_net.load_state_dict(torch.load('/home/user/low_light_enhancement/Zero-DCE++/snapshots_Zero_DCE++/Epoch92.pth', map_location=torch.device('cpu')))
+	DCE_net.load_state_dict(torch.load('/home/user/low_light_enhancement/Zero_DCE_Tiny/snapshots_Zero_DCE_Tiny/Epoch171.pth', map_location=torch.device('cpu')))
 	start = time.time()
 	enhanced_image,params_maps = DCE_net(data_lowlight)
 
 	end_time = (time.time() - start)
 
 	print(end_time)
-	result_path = '/home/user/low_light_enhancement/Zero-DCE++/data/result_Test_Part2_pretrained/'
+	result_path = '/home/user/low_light_enhancement/Zero_DCE_Tiny/data/result_Test_Part2/'
 	result_path = os.path.join(result_path, image_name)
 	print("result_path: ",result_path)
 	torchvision.utils.save_image(enhanced_image, result_path)
