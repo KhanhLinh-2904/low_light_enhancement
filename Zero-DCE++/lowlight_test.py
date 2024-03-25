@@ -32,16 +32,16 @@ def lowlight(image_path,image_name):
 	data_lowlight = data_lowlight[0:h,0:w,:]
 	data_lowlight = data_lowlight.permute(2,0,1)
 	data_lowlight = data_lowlight.unsqueeze(0)
-
+	print("shape of image: ", data_lowlight.shape)
 	DCE_net = model.enhance_net_nopool(scale_factor)
-	DCE_net.load_state_dict(torch.load('/home/user/low_light_enhancement/Zero-DCE++/snapshots_Zero_DCE++/Epoch92.pth', map_location=torch.device('cpu')))
+	DCE_net.load_state_dict(torch.load('/home/linhhima/low_light_enhancement/Zero-DCE++/snapshots_Zero_DCE++/Epoch92.pth', map_location=torch.device('cpu')))
 	start = time.time()
 	enhanced_image,params_maps = DCE_net(data_lowlight)
-
+	print("enhanced_image: ",enhanced_image.shape)
 	end_time = (time.time() - start)
 
 	print(end_time)
-	result_path = '/home/user/low_light_enhancement/Zero-DCE++/data/result_Test_Part2_pretrained/'
+	result_path = '/home/linhhima/low_light_enhancement/Zero-DCE++/data/result_Test_Part2_pretrained/'
 	result_path = os.path.join(result_path, image_name)
 	print("result_path: ",result_path)
 	torchvision.utils.save_image(enhanced_image, result_path)
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
 	with torch.no_grad():
 
-		filePath = '/home/user/low_light_enhancement/Zero-DCE++/data/Test_Part2/'	
+		filePath = '/home/linhhima/low_light_enhancement/Zero-DCE++/data/Test_Part2'	
 		file_list = os.listdir(filePath)
 		sum_time = 0
 		for file_name in file_list:
