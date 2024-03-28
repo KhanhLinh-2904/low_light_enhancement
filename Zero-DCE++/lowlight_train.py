@@ -13,11 +13,15 @@ import Myloss
 import numpy as np
 from torchvision import transforms
 import torch
+
+import gc
 torch.cuda.empty_cache()
+gc.collect()
+
+
 # Save the current standard output
 original_stdout = sys.stdout
-epoch_save = 0
-min_loss_epoch = 0.5
+
 
 def weights_init(m):
     classname = m.__class__.__name__
@@ -67,18 +71,20 @@ def train(config):
 	optimizer = torch.optim.Adam(DCE_net.parameters(), lr=config.lr, weight_decay=config.weight_decay)
 	
 	DCE_net.train()
-
+	epoch_save = 0
+	min_loss_epoch = 0
 	for epoch in range(config.num_epochs):
 		for iteration, (train_img_lowlight, label_img) in enumerate(train_loader):
 			train_img_lowlight = train_img_lowlight.cuda()
 			label_img = label_img.cuda()
 
+
 			E = 0.6
 
-			enhanced_image, A  = DCE_net(train_img_lowlight)
+			enhanced_image,A  = DCE_net(train_img_lowlight)
 			Loss_TV = 1600*L_TV(A)
 			# Loss_TV = 200*L_TV(A)			
-			loss_spa = torch.mean(L_spa(enhanced_image, label_img))
+			loss_spa = torch.mean(L_spa(enhanced_image, train_img_lowlight))
 			loss_col = 5*torch.mean(L_color(enhanced_image))
 
 			loss_exp = 10*torch.mean(L_exp(enhanced_image,E))
@@ -87,8 +93,24 @@ def train(config):
 			# best_loss
 			loss =  Loss_TV + loss_spa + loss_col + loss_exp
 
+			# E = 0.6
+			# w_col = 0.5
+			# w_tvA =  20
 
-			
+			# enhanced_image, A  = DCE_net(train_img_lowlight)
+			# Loss_TV = L_TV(A)
+			# Loss_TV = torch.mean(Loss_TV)
+			# # Loss_TV = 200*L_TV(A)			
+			# loss_spa = torch.mean(L_spa(enhanced_image, label_img))
+			# loss_col = torch.mean(L_color(enhanced_image))
+			# loss_exp = torch.mean(L_exp(enhanced_image,E))
+
+			# # best_loss
+			# loss =  (Loss_TV + loss_spa + w_col*loss_col + w_tvA*loss_exp)
+			# print(loss)
+			# loss *= 10
+			# print(loss)
+
 			optimizer.zero_grad()
 			loss.backward()
 			torch.nn.utils.clip_grad_norm(DCE_net.parameters(),config.grad_clip_norm)
@@ -101,19 +123,23 @@ def train(config):
 				torch.save(DCE_net.state_dict(), config.snapshots_folder + "Epoch" + str(epoch) + '.pth') 		
         # Validate the model after each epoch
 		val_loss = validate(val_loader, DCE_net, criterion)
-		print()
+		print("epoch: ", epoch)
+		print("loss_epoch: ", val_loss)
+
+
 		if epoch == 0:
 			min_loss_epoch = val_loss
+			epoch_save = 1
 			
 		if min_loss_epoch > val_loss:
 			min_loss_epoch = val_loss
 			epoch_save = epoch + 1
-			print("min_loss_epoch: ",min_loss_epoch)
-			print("epoch_save: ",epoch_save)
+			# print("min_loss_epoch: ", min_loss_epoch)
+			# print("epoch_save: ", epoch_save)
 
-		print("min_loss_epoch: ",min_loss_epoch)
+	print("min_loss_epoch: ", min_loss_epoch)
 
-
+	torch.cuda.empty_cache()
 
 if __name__ == "__main__":
 
@@ -131,10 +157,10 @@ if __name__ == "__main__":
 	parser.add_argument('--train_batch_size', type=int, default=8)
 	parser.add_argument('--val_batch_size', type=int, default=8)
 	parser.add_argument('--num_workers', type=int, default=4)
-	parser.add_argument('--display_iter', type=int, default=10)
+	parser.add_argument('--display_iter', type=int, default=30)
 	parser.add_argument('--snapshot_iter', type=int, default=10)
 	parser.add_argument('--scale_factor', type=int, default=1)
-	parser.add_argument('--snapshots_folder', type=str, default="snapshots_Zero_DCE++_new/")
+	parser.add_argument('--snapshots_folder', type=str, default="snapshots_Zero_DCE++_new_300/")
 	parser.add_argument('--load_pretrain', type=bool, default= False)
 	# parser.add_argument('--pretrain_dir', type=str, default= "snapshots_Zero_DCE++/Epoch99.pth")
 
@@ -145,10 +171,10 @@ if __name__ == "__main__":
 
 
 	train(config)
-	with open('parameter_train.txt', 'w') as file:
-		# Write to the file
-		file.write(f"Validation Loss has minimum value in epoch {epoch_save}: {min_loss_epoch}")
-	print(f"Validation Loss has minimum value in epoch {epoch_save}: {min_loss_epoch}")
+	# with open('parameter_train.txt', 'w') as file:
+	# 	# Write to the file
+	# 	file.write(f"Validation Loss has minimum value in epoch {epoch_save}: {min_loss_epoch}")
+	# print(f"Validation Loss has minimum value in epoch {epoch_save}: {min_loss_epoch}")
 
 
 

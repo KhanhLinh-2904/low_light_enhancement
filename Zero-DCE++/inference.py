@@ -14,16 +14,18 @@ from torchvision import transforms
 from PIL import Image
 import glob
 import time
+import PIL
+
 
 def lowlight(image_path,image_name):
 	os.environ['CUDA_VISIBLE_DEVICES']='0'
 	scale_factor = 12
 	data_lowlight = Image.open(image_path)
 
- 
+	# data_lowlight = data_lowlight.resize((512, 512), PIL.Image.Resampling.LANCZOS)
 
 	data_lowlight = (np.asarray(data_lowlight)/255.0)
-
+	print("data_lowlight: ",data_lowlight.shape)
 
 	data_lowlight = torch.from_numpy(data_lowlight).float()
 
@@ -34,16 +36,16 @@ def lowlight(image_path,image_name):
 	data_lowlight = data_lowlight.unsqueeze(0)
 	print("shape of image: ",data_lowlight.shape)
 	DCE_net = model.enhance_net_nopool(scale_factor)
-	DCE_net.load_state_dict(torch.load('/home/user/low_light_enhancement/Zero-DCE++/snapshots_Zero_DCE++/Epoch92.pth', map_location=torch.device('cpu')))
+	DCE_net.load_state_dict(torch.load('./snapshots_Zero_DCE++/Epoch99.pth', map_location=torch.device('cpu')))
 	start = time.time()
 	enhanced_image,params_maps = DCE_net(data_lowlight)
-
+	print("shape of enhanced_image: ",enhanced_image.shape)
 	end_time = (time.time() - start)
 
 	print(end_time)
-	result_path = '/home/user/low_light_enhancement/Zero-DCE++/data/result_Test_Part2_pretrained/'
+	result_path = './data/result_Test_Part2/'
 	result_path = os.path.join(result_path, image_name)
-	print("result_path: ",result_path)
+	# print("result_path: ",result_path)
 	torchvision.utils.save_image(enhanced_image, result_path)
 	return end_time
 
@@ -51,13 +53,13 @@ if __name__ == '__main__':
 
 	with torch.no_grad():
 
-		filePath = '/home/user/low_light_enhancement/Zero-DCE++/data/Test_Part2/'	
+		filePath = './data/Test_Part2/'	
 		file_list = os.listdir(filePath)
 		sum_time = 0
 		for file_name in file_list:
 			print("file_name:",file_name)
 			path_to_image = os.path.join(filePath, file_name)
-			print("path_to_image:",path_to_image)
+			# print("path_to_image:",path_to_image)
 			sum_time = sum_time + lowlight(path_to_image,file_name)
 		print(sum_time)
 		

@@ -84,8 +84,8 @@ def calculate_metrics(original_img, enhanced_img):
     enhanced_img = enhanced_img.astype(float) / 255.0
     # original_img.resize(enhanced_img.shape)
 
-    print('enhanced_img.shape: ', enhanced_img.shape)
-    print('original_img.shape: ', original_img.shape)
+    # print('enhanced_img.shape: ', enhanced_img.shape)
+    # print('original_img.shape: ', original_img.shape)
     # original_img = original_img.resize(enhanced_img.shape)
     original_img = cv2.resize(original_img, (enhanced_img.shape[1], enhanced_img.shape[0]))
 
@@ -123,10 +123,17 @@ def calculate_metrics(original_img, enhanced_img):
 
 if __name__ == '__main__':
     # lpips_model = LPIPS(net='vgg')
-    original_image_folder = '/home/user/low_light_enhancement/Zero-DCE++/data/label_Test_Part2'
-    enhanced_image_folder = '/home/user/low_light_enhancement/Zero-DCE++/data/result_Test_Part2_pretrained'
+    original_image_folder = './data/label_Test_Part2'
+    enhanced_image_folder = './data/result_Test_Part2_onnx'
 
     images = os.listdir(enhanced_image_folder)
+    psnr_arr = []
+    ssim_arr = []
+    entropy_original_arr = []
+    entropy_enhanced_arr = []
+    std_dev_original_arr = []
+    std_dev_enhanced_arr = []
+    mse_arr = []
     results = ''
     for image in images:
         # print("image: ",image)
@@ -150,6 +157,22 @@ if __name__ == '__main__':
                 std_dev_enhanced,
                 mse_value,
             ) = calculate_metrics(original_img, enhanced_img)
+            psnr_arr.append(psnr_value)
+            ssim_arr.append(ssim_value)
+            entropy_original_arr.append(entropy_original)
+            entropy_enhanced_arr.append(entropy_enhanced)
+            std_dev_original_arr.append(std_dev_original)
+            std_dev_enhanced_arr.append(std_dev_enhanced)
+            mse_arr.append(mse_value)
             result = f'{image}\npsnr: {psnr_value}, ssim: {ssim_value}, entropy: {entropy_enhanced}, std: {std_dev_enhanced}, mse: {mse_value}'
             results = results + result + '\n'
-    print(results)
+
+    psnr_value = sum(psnr_arr) / len(psnr_arr)
+    ssim_value = sum(ssim_arr) / len(ssim_arr)
+    entropy_enhanced = sum(entropy_enhanced_arr) / len(entropy_enhanced_arr)
+    std_dev_enhanced = sum(std_dev_enhanced_arr) / len(std_dev_enhanced_arr)
+    mse_value = sum(mse_arr) / len(mse_arr)
+
+    result_final = f'\n\n\nFinal: psnr: {psnr_value}, ssim: {ssim_value}, entropy: {entropy_enhanced}, std: {std_dev_enhanced}, mse: {mse_value}'
+    print(result_final)
+
